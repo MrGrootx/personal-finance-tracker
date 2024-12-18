@@ -1,41 +1,40 @@
-import pandas as pd
-import csv
 from datetime import datetime
 
-
-class CSV:
-    CSV_FILE = "finance_data.csv"
-    COLUMNS = ["date", "amount", "category", "description"]
-
-    @classmethod
-    def initialize_csv(self):
-        try:
-            pd.read_csv(self.CSV_FILE)
-        except FileNotFoundError:
-            df = pd.DataFrame(columns=[self.COLUMNS])
-            df.to_csv(self.CSV_FILE, index=False)
-
-    @classmethod
-    def add_entry(self, date, amount, category, description):
-        new_entry = {
-            "date": date,
-            "amount": amount,
-            "category": category,
-            "description": description,
-        }
-        with open(self.CSV_FILE, "a", newline="") as csvfile:
-            writer = csv.DictWriter(csvfile, fieldnames=self.COLUMNS)
-            writer.writerow(new_entry)
-        print("Entry added successfully!")
+date_format = "%d-%m-%Y"
+CATEGORIES = {"I": "Income", "E": "Expense"}
 
 
-CSV.initialize_csv()
+def get_date(prompt, allow_default=False):
+    date_str = input(prompt)
+    if allow_default and not date_str:
+        return datetime.today().strftime(date_format)
+    try:
+        vaild_date = datetime.strptime(date_str, date_format)
+        return vaild_date.strftime(date_format)
+    except ValueError:
+        print("Invalid date format. Please use dd-mm-yyyy.")
+        return get_date(prompt)
 
-# CSV.add_entry(
-#     datetime.now().strftime("%Y-%m-%d"),
-#     input("Enter the amount: "),
-#     input("Enter the category: "),
-#     input("Enter the description: "),
-# )
 
-CSV.add_entry("2023-20-07", 100, "Groceries", "Milk")
+def get_amount():
+    try:
+        amount = float(input("Enter the amount: "))
+        if amount <= 0:
+            raise ValueError("Amount must be a non-negative non-zero value.")
+        return amount
+    except ValueError as e:
+        print(e)
+        return get_amount()
+
+
+def get_category():
+    category = input("Enter the category (I for Income or 'E' for Expense): ").upper()
+    if category in CATEGORIES:
+        return CATEGORIES[category]
+    else:
+        print("Invalid category. Please enter 'I' for Income or 'E' for Expense.")
+        return get_category()
+
+
+def get_description():
+    return input("Enter the description: ")
